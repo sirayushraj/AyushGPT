@@ -1,0 +1,33 @@
+import React from 'react'
+import { motion } from 'framer-motion'
+
+const MessageBubble = ({ message }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`fade-in ${message.sender === 'user' ? 'message-user ml-auto' : 'message-ai'} p-4 rounded-2xl max-w-[80%]`}
+    >
+      <div className="flex items-start space-x-3">
+        {message.sender === 'ai' && (
+          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold">A</span>
+          </div>
+        )}
+        <div className="flex-1">
+          <p className="text-gray-100">{message.text}</p>
+          <div className={`text-xs mt-2 ${message.sender === 'user' ? 'text-purple-300' : 'text-gray-400'} text-right`}>
+            {message.timestamp}
+          </div>
+        </div>
+        {message.sender === 'user' && (
+          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold">U</span>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  )
+}
+
+export default MessageBubble
