@@ -1,0 +1,104 @@
+import React, { useState, useEffect } from 'react'
+import ChatWindow from './components/ChatWindow'
+import ThemeToggle from './components/ThemeToggle'
+import SettingsModal from './components/SettingsModal'
+import { motion } from 'framer-motion'
+
+const App = () => {
+  const [theme, setTheme] = useState('dark')
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [greeting, setGreeting] = useState('')
+
+  useEffect(() => {
+    // Set theme
+    document.body.classList.add(theme)
+    
+    // Set greeting based on time
+    const hour = new Date().getHours()
+    if (hour < 12) {
+      setGreeting('Good morning')
+    } else if (hour < 17) {
+      setGreeting('Good afternoon')
+    } else if (hour < 21) {
+      setGreeting('Good evening')
+    } else {
+      setGreeting('Good night')
+    }
+  }, [theme])
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(newTheme)
+    document.body.classList.remove(theme)
+    document.body.classList.add(newTheme)
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="glass-card rounded-2xl p-6 w-full max-w-2xl shadow-xl"
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center">
+              <span className="text-white font-bold text-xl">A</span>
+            </div>
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-300">
+              AyushGPT
+            </h1>
+          </div>
+          
+          <div className="flex space-x-3">
+            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+            <button 
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 rounded-full hover:bg-white/10 transition-colors"
+              aria-label="Settings"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Greeting */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-center mb-8"
+        >
+          <h2 className="text-2xl font-semibold text-gray-100 mb-2">
+            {greeting}! Welcome to AyushGPT.
+          </h2>
+          <p className="text-gray-300">How can I help you today?</p>
+        </motion.div>
+
+        {/* Chat Window */}
+        <ChatWindow />
+
+        {/* Footer */}
+        <div className="mt-6 text-center text-sm text-gray-400">
+          <p>Powered by Google Gemini • Secure and Private</p>
+        </div>
+      </motion.div>
+
+      {/* Settings Modal */}
+      {isSettingsOpen && (
+        <SettingsModal 
+          isOpen={isSettingsOpen} 
+          onClose={() => setIsSettingsOpen(false)} 
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
+      )}
+    </div>
+  )
+}
+
+export default App
