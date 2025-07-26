@@ -1,0 +1,136 @@
+import React, { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+
+const SettingsModal = ({ isOpen, onClose, theme, toggleTheme }) => {
+  const [activeTab, setActiveTab] = useState('theme')
+  const [apiKey, setApiKey] = useState('')
+
+  const handleSaveApiKey = () => {
+    // In a real app, this would be sent to the backend
+    alert('API Key saved! (In a real app, this would be securely stored on the backend)')
+    onClose()
+  }
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="glass-card rounded-2xl w-full max-w-md z-10 overflow-hidden"
+          >
+            <div className="p-5 border-b border-gray-700/50 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-100">Settings</h3>
+              <button 
+                onClick={onClose}
+                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-5">
+              <div className="flex border-b border-gray-700/50 mb-5">
+                <button
+                  className={`px-4 py-2 font-medium ${activeTab === 'theme' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-400'}`}
+                  onClick={() => setActiveTab('theme')}
+                >
+                  Theme
+                </button>
+                <button
+                  className={`px-4 py-2 font-medium ${activeTab === 'api' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-400'}`}
+                  onClick={() => setActiveTab('api')}
+                >
+                  API Key
+                </button>
+                <button
+                  className={`px-4 py-2 font-medium ${activeTab === 'about' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-400'}`}
+                  onClick={() => setActiveTab('about')}
+                >
+                  About
+                </button>
+              </div>
+              
+              <div className="min-h-[200px]">
+                {activeTab === 'theme' && (
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-gray-200">Appearance</h4>
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-black/20">
+                      <span className="text-gray-300">Dark Mode</span>
+                      <button
+                        onClick={toggleTheme}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${theme === 'dark' ? 'bg-purple-600' : 'bg-gray-600'}`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {activeTab === 'api' && (
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-gray-200">API Configuration</h4>
+                    <p className="text-sm text-gray-400">
+                      Your API key is securely stored on the backend. Only administrators can modify it.
+                    </p>
+                    <div className="p-3 rounded-lg bg-black/20">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Current Status</span>
+                        <span className="px-2 py-1 rounded text-xs bg-green-500/20 text-green-400">Connected</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {activeTab === 'about' && (
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-gray-200">About AyushGPT</h4>
+                    <p className="text-gray-400">
+                      AyushGPT is a modern AI chat interface powered by Google's Gemini technology. 
+                      It provides a seamless conversational experience with a futuristic design.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+                      <div className="p-3 rounded-lg bg-black/20">
+                        <div className="text-sm text-gray-400">Version</div>
+                        <div className="text-gray-200">1.0.0</div>
+                      </div>
+                      <div className="p-3 rounded-lg bg-black/20">
+                        <div className="text-sm text-gray-400">Developer</div>
+                        <div className="text-gray-200">Ayush Team</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="p-5 border-t border-gray-700/50 flex justify-end">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 rounded-lg bg-gray-700/50 text-gray-200 hover:bg-gray-600/50 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+export default SettingsModal
