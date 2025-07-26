@@ -1,0 +1,170 @@
+import React, { useState, useEffect, useRef } from 'react'
+import MessageBubble from './MessageBubble'
+import { motion } from 'framer-motion'
+
+const ChatWindow = () => {
+  const [messages, setMessages] = useState([])
+  const [inputValue, setInputValue] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const messagesEndRef = useRef(null)
+
+  // Load messages from localStorage on component mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('ayushgpt-messages')
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages))
+    }
+  }, [])
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('ayushgpt-messages', JSON.stringify(messages))
+    }
+  }, [messages])
+
+  // Scroll to bottom of chat
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!inputValue.trim() || isLoading) return
+
+    const userMessage = {
+      id: Date.now(),
+      text: inputValue,
+      sender: 'user',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+
+    // Add user message to chat
+    const newMessages = [...messages, userMessage]
+    setMessages(newMessages)
+    setInputValue('')
+    setIsLoading(true)
+
+    try {
+      // Call backend API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: inputValue }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to get response from AI')
+      }
+
+      const data = await response.json()
+      
+      const aiMessage = {
+        id: Date.now() + 1,
+        text: data.response,
+        sender: 'ai',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+
+      setMessages([...newMessages, aiMessage])
+    } catch (error) {
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: "Sorry, I encountered an error. Please try again.",
+        sender: 'ai',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+      setMessages([...newMessages, errorMessage])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const clearChat = () => {
+    setMessages([])
+    localStorage.removeItem('ayushgpt-messages')
+  }
+
+  return (
+    <div className="flex flex-col h-[500px]">
+      {/* Chat Header */}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-medium text-gray-200">Chat</h3>
+        <button 
+          onClick={clearChat}
+          className="text-sm text-purple-300 hover:text-purple-100 transition-colors"
+        >
+          Clear Chat
+        </button>
+      </div>
+
+      {/* Messages Container */}
+      <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-2 rounded-lg bg-black/10">
+        {messages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-center p-4">
+            <div className="mb-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center mx-auto">
+                <span className="text-white text-2xl">A</span>
+              </div>
+            </div>
+            <h4 className="text-xl font-semibold text-gray-200 mb-2">Start a conversation</h4>
+            <p className="text-gray-400 max-w-md">
+              Ask me anything! I can help with explanations, ideas, writing, coding, and more.
+            </p>
+          </div>
+        ) : (
+          messages.map((message) => (
+            <MessageBubble key={message.id} message={message} />
+          ))
+        )}
+        
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="message-ai p-4 rounded-2xl max-w-[80%]"
+          >
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center">
+                <span className="text-white font-bold">A</span>
+              </div>
+              <div className="loading-dots flex space-x-1">
+                <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+                <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+                <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <form onSubmit={handleSubmit} className="flex space-x-3">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Type your message..."
+          className="glass-input flex-1 rounded-xl px-4 py-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          disabled={isLoading}
+        />
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          type="submit"
+          className="glass-button rounded-xl px-5 py-3 font-medium text-white disabled:opacity-50"
+          disabled={isLoading || !inputValue.trim()}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+          </svg>
+        </motion.button>
+      </form>
+    </div>
+  )
+}
+
+export default ChatWindow
